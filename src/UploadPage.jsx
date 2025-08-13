@@ -1,63 +1,95 @@
+import React, { useRef, useState } from "react";
 import upload from "@ui5/webcomponents-icons/dist/upload.js";
-import {Bar , Page,Table, Title, Button} from '@ui5/webcomponents-react';
-import {TableRow,TableCell,TableHeaderRow,TableHeaderCell,TableSelectionMulti } from '@ui5/webcomponents-react';
+import * as XLSX from "xlsx";
+import { Toolbar, ToolbarSpacer, Button, Title, Bar, Page, Table, Text, Dialog, Input,Label} from '@ui5/webcomponents-react';
+import { TableRow, TableCell, TableHeaderRow, TableHeaderCell, TableSelectionMulti } from '@ui5/webcomponents-react';
 
 export function UploadPage() {
-  return (
-    
-        <Page
-            backgroundDesign="Solid"
-            footer={<Bar design="fixedFooter" endContent={<><Button design="Emphasized">Enter Package</Button><Button design="Emphasized">Submit</Button></>} />}
-            header={
-                <Bar startContent={<Title level="H6" style={{padding: "var(--sapContent_Space_S)"}}> PI/PO To CPI Migration </Title>}
-                     endContent={<Button design="Emphasized" icon= {upload} onClick={function _ie(){}} > Browse </Button>}
-                >
-                </Bar>}
-            style={{
-                padding: '0px',
-                margin: '0px',
-                height: "589px"
-            }}
-        >
-                <Table
-                    features={<TableSelectionMulti />}
-                    headerRow={
-                        <TableHeaderRow sticky>
-                            <TableHeaderCell ><span>Product</span></TableHeaderCell>
-                            <TableHeaderCell ><span>Supplier</span></TableHeaderCell>
-                        </TableHeaderRow>
-                    }
-                    onMove={function _ie(){}}
-                    onMoveOver={function _ie(){}}
-                    onRowActionClick={function _ie(){}}
-                    onRowClick={function _ie(){}}
-                >
-                    <TableRow rowKey="0">
-                        <TableCell>
-                            <span>
-                                Notebook Basic
-                            </span>
-                        </TableCell>
-                        <TableCell>
-                            <span>
-                                Very Best Screens
-                            </span>
-                        </TableCell>
-                    </TableRow>
-                        <TableRow rowKey="1">
-                            <TableCell>
-                                <span>
-                                    Notebook Basic 17HT-1001
-                                </span>
-                            </TableCell>
-                            <TableCell>
-                                <span>
-                                    Very Best Screens
-                                </span>
-                            </TableCell>
-                        </TableRow>
-                </Table> 
-            
-        </Page>
+    //const fileInputRef = useRef(null);
+    const [open, setOpen] = useState(false);
+    return (
+        <>
+            <Toolbar>
+                <Title level="H1">PIPO To CPI Migration</Title>
+                <ToolbarSpacer />
+                <Button design="Emphasized" icon={upload}>Browse</Button>
+            </Toolbar>
+            <Table
+                features={<TableSelectionMulti />}
+                headerRow={
+                    <TableHeaderRow sticky>
+                        <TableHeaderCell ><span>Product</span></TableHeaderCell>
+                        <TableHeaderCell ><span>Supplier</span></TableHeaderCell>
+                    </TableHeaderRow>
+                }
+                onMove={function _ie() { }}
+                onMoveOver={function _ie() { }}
+                onRowActionClick={function _ie() { }}
+                onRowClick={function _ie() { }}
+            >
+                <TableRow rowKey="0">
+                    <TableCell>
+                        <span>
+                            Notebook Basic
+                        </span>
+                    </TableCell>
+                    <TableCell>
+                        <span>
+                            Very Best Screens
+                        </span>
+                    </TableCell>
+                </TableRow>
+                <TableRow rowKey="1">
+                    <TableCell>
+                        <span>
+                            Notebook Basic 17HT-1001
+                        </span>
+                    </TableCell>
+                    <TableCell>
+                        <span>
+                            Very Best Screens
+                        </span>
+                    </TableCell>
+                </TableRow>
+            </Table>
+            <Bar
+                design="Footer"
+                style={{
+                    position: "fixed",
+                    bottom: 0,
+                }}
+                endContent={
+                    <>
+                        <Button design="Emphasized" onClick={() => setOpen(true)}>Enter Package</Button>
+                        <Button design="Emphasized">Submit</Button>
+                    </>
+                }
+            />
+
+            {/* Dialog UI */}
+            <Dialog
+                open={open}
+                headerText="Enter Package Details"
+                footer={
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem", width: "100%" }}>
+                    <Button design="Emphasized" onClick={() => setOpen(false)}>OK</Button>
+                    <Button design="Emphasized" onClick={() => setOpen(false)}>
+                    Close
+                    </Button>
+                </div>
+                }
+            >
+                <div style={{ padding: "1rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <Label required style={{ minWidth: "140px" }}>Package Name:</Label>
+                    <Input style={{ flex: 1 }} placeholder="Enter package name" />
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <Label required style={{ minWidth: "140px" }}>Description:</Label>
+                    <Input style={{ flex: 1 }} placeholder="Enter description" />
+                </div>
+                </div>
+            </Dialog>
+        </>
     )
 }
