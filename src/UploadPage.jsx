@@ -1,57 +1,83 @@
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import upload from "@ui5/webcomponents-icons/dist/upload.js";
 import * as XLSX from "xlsx";
-import { Toolbar, ToolbarSpacer, Button, Title, Bar, Page, Table, Text, Dialog, Input,Label} from '@ui5/webcomponents-react';
-import { TableRow, TableCell, TableHeaderRow, TableHeaderCell, TableSelectionMulti } from '@ui5/webcomponents-react';
+import { 
+    Toolbar, ToolbarSpacer, Button, Title, Bar, Table, Dialog, Input,Label,
+    TableRow, TableCell, TableHeaderRow, TableHeaderCell, TableSelectionMulti
+} from '@ui5/webcomponents-react';
 
 export function UploadPage() {
-    //const fileInputRef = useRef(null);
+    const fileInputRef = useRef(null);
+    const [tableData, setTableData] = useState([]);
     const [open, setOpen] = useState(false);
+
+    const handleBrowseClick = () => {
+        fileInputRef.current.click();
+    };
+    const handleFileChange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: "array" });
+
+            // Get first sheet
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+
+            // Convert to JSON
+            const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+            // Remove header row for data table
+            setTableData(jsonData);
+        };
+        reader.readAsArrayBuffer(file);
+        }
+    };
+    
     return (
         <>
+        {/* Header */}
             <Toolbar>
                 <Title level="H1">PIPO To CPI Migration</Title>
                 <ToolbarSpacer />
-                <Button design="Emphasized" icon={upload}>Browse</Button>
+                <Button design="Emphasized" icon={upload} onClick={handleBrowseClick}>Browse</Button>
+                <input
+                    type="file"
+                    accept=".xlsx,.xls"
+                    style={{ display: "none" }}
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                />
             </Toolbar>
+
+        {/* Table Content */}
             <Table
                 features={<TableSelectionMulti />}
                 headerRow={
+                tableData.length > 0 && (
                     <TableHeaderRow sticky>
-                        <TableHeaderCell ><span>Product</span></TableHeaderCell>
-                        <TableHeaderCell ><span>Supplier</span></TableHeaderCell>
-                    </TableHeaderRow>
+                    {tableData[0].map((col, index) => (
+                        <TableHeaderCell key={index}>
+                        <span>{col}</span>
+                        </TableHeaderCell>
+                    ))}
+                    </TableHeaderRow> 
+                )
                 }
-                onMove={function _ie() { }}
-                onMoveOver={function _ie() { }}
-                onRowActionClick={function _ie() { }}
-                onRowClick={function _ie() { }}
             >
-                <TableRow rowKey="0">
-                    <TableCell>
-                        <span>
-                            Notebook Basic
-                        </span>
+                {tableData.slice(1).map((row, rowIndex) => (
+                <TableRow key={rowIndex}>
+                    {row.map((cell, cellIndex) => (
+                    <TableCell key={cellIndex}>
+                        <span>{cell}</span>
                     </TableCell>
-                    <TableCell>
-                        <span>
-                            Very Best Screens
-                        </span>
-                    </TableCell>
+                    ))}
                 </TableRow>
-                <TableRow rowKey="1">
-                    <TableCell>
-                        <span>
-                            Notebook Basic 17HT-1001
-                        </span>
-                    </TableCell>
-                    <TableCell>
-                        <span>
-                            Very Best Screens
-                        </span>
-                    </TableCell>
-                </TableRow>
+                ))}
             </Table>
+
+        {/* Footer */}
             <Bar
                 design="Footer"
                 style={{
@@ -66,7 +92,7 @@ export function UploadPage() {
                 }
             />
 
-            {/* Dialog UI */}
+        {/* Dialog UI */}
             <Dialog
                 open={open}
                 headerText="Enter Package Details"
