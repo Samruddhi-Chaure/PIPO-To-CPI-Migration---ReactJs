@@ -1,8 +1,8 @@
 import { useRef, useState } from "react";
 import upload from "@ui5/webcomponents-icons/dist/upload.js";
 import * as XLSX from "xlsx";
-import { 
-    Toolbar, ToolbarSpacer, Button, Title, Bar, Table, Dialog, Input,Label,
+import {
+    Toolbar, ToolbarSpacer, Button, Title, Bar, Table, Dialog, Input, Label,
     TableRow, TableCell, TableHeaderRow, TableHeaderCell, TableSelectionMulti
 } from '@ui5/webcomponents-react';
 
@@ -17,27 +17,27 @@ export function UploadPage() {
     const handleFileChange = (event) => {
         const file = event.target.files[0];
         if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: "array" });
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: "array" });
 
-            // Get first sheet
-            const sheetName = workbook.SheetNames[0];
-            const sheet = workbook.Sheets[sheetName];
+                // Get first sheet
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
 
-            // Convert to JSON
-            const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-            // Remove header row for data table
-            setTableData(jsonData);
-        };
-        reader.readAsArrayBuffer(file);
+                // Convert to JSON
+                const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+                // Remove header row for data table
+                setTableData(jsonData);
+            };
+            reader.readAsArrayBuffer(file);
         }
     };
-    
+
     return (
         <>
-        {/* Header */}
+            {/* Header */}
             <Toolbar>
                 <Title level="H1">PIPO To CPI Migration</Title>
                 <ToolbarSpacer />
@@ -51,33 +51,33 @@ export function UploadPage() {
                 />
             </Toolbar>
 
-        {/* Table Content */}
+            {/* Table Content */}
             <Table
                 features={<TableSelectionMulti />}
                 headerRow={
-                tableData.length > 0 && (
-                    <TableHeaderRow sticky>
-                    {tableData[0].map((col, index) => (
-                        <TableHeaderCell key={index}>
-                        <span>{col}</span>
-                        </TableHeaderCell>
-                    ))}
-                    </TableHeaderRow> 
-                )
+                    tableData.length > 0 && (
+                        <TableHeaderRow sticky>
+                            {tableData[0].map((col, index) => (
+                                <TableHeaderCell key={index}>
+                                    <span>{col}</span>
+                                </TableHeaderCell>
+                            ))}
+                        </TableHeaderRow>
+                    )
                 }
             >
                 {tableData.slice(1).map((row, rowIndex) => (
-                <TableRow key={rowIndex}>
-                    {row.map((cell, cellIndex) => (
-                    <TableCell key={cellIndex}>
-                        <span>{cell}</span>
-                    </TableCell>
-                    ))}
-                </TableRow>
+                    <TableRow key={rowIndex}>
+                        {row.map((cell, cellIndex) => (
+                            <TableCell key={cellIndex}>
+                                <span>{cell}</span>
+                            </TableCell>
+                        ))}
+                    </TableRow>
                 ))}
             </Table>
 
-        {/* Footer */}
+            {/* Footer */}
             <Bar
                 design="Footer"
                 style={{
@@ -92,28 +92,29 @@ export function UploadPage() {
                 }
             />
 
-        {/* Dialog UI */}
+            {/* Dialog UI */}
             <Dialog
                 open={open}
                 headerText="Enter Package Details"
                 footer={
-                <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem", width: "100%" }}>
-                    <Button design="Emphasized" onClick={() => setOpen(false)}>OK</Button>
-                    <Button design="Emphasized" onClick={() => setOpen(false)}>
-                    Close
-                    </Button>
-                </div>
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem", width: "100%" }}>
+                        <Button design="Emphasized" onClick={() => setOpen(false)}>OK</Button>
+                        <Button onClick={() => setOpen(false)}>Close</Button>
+                    </div>
                 }
             >
                 <div style={{ padding: "1rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <Label required style={{ minWidth: "140px" }}>Package Name:</Label>
-                    <Input style={{ flex: 1 }} placeholder="Enter package name" />
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <Label required style={{ minWidth: "140px" }}>Description:</Label>
-                    <Input style={{ flex: 1 }} placeholder="Enter description" />
-                </div>
+                    {[
+                        { label: "Package Name", placeholder: "Enter package name" },
+                        { label: "Description", placeholder: "Enter description" },
+                    ].map((field, idx) => (
+                        <div key={idx} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                            <Label required style={{ minWidth: "140px" }}>
+                                {field.label}:
+                            </Label>
+                            <Input style={{ flex: 1 }} placeholder={field.placeholder} />
+                        </div>
+                    ))}
                 </div>
             </Dialog>
         </>
