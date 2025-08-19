@@ -1,18 +1,35 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import upload from "@ui5/webcomponents-icons/dist/upload.js";
 import * as XLSX from "xlsx";
 import {
-    Toolbar, ToolbarSpacer, Button, Title, Bar, Table, Dialog, Input, Label,
-    TableRow, TableCell, TableHeaderRow, TableHeaderCell, TableSelectionMulti,
-    FileUploader
-} from '@ui5/webcomponents-react';
+    Toolbar,
+    ToolbarSpacer,
+    Button,
+    Title,
+    Bar,
+    Dialog,
+    Input,
+    Label,
+    FileUploader,
+} from "@ui5/webcomponents-react";
+
+// Import native UI5 Web Components for Table
+import "@ui5/webcomponents/dist/Table.js";
+import "@ui5/webcomponents/dist/TableRow.js";
+import "@ui5/webcomponents/dist/TableCell.js";
+import "@ui5/webcomponents/dist/TableHeaderRow.js";
+import "@ui5/webcomponents/dist/TableHeaderCell.js";
+import "@ui5/webcomponents/dist/TableSelectionMulti.js";
+import "@ui5/webcomponents/dist/Button.js";
 
 export function UploadPage() {
     const [tableData, setTableData] = useState([]);
     const [open, setOpen] = useState(false);
 
+    const selectionRef = useRef(null);
+
     const handleFileUpload = async (event) => {
-        const file = event.detail.files[0]; // FileUploader gives files in event.detail
+        const file = event.detail.files[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -31,6 +48,27 @@ export function UploadPage() {
         }
     };
 
+    const handleDelete = () => {
+        const selectedSet =
+            selectionRef.current?.getSelectedAsSet?.() ?? new Set();
+        const selectedKeys = Array.from(selectedSet);
+
+        if (selectedKeys.length === 0) return;
+
+        // Remove rows by keys
+        setTableData((prev) => {
+            const header = prev[0] || [];
+            const body = prev.slice(1);
+            const filtered = body.filter(
+                (_, idx) => !selectedKeys.includes(`Row${idx + 1}`)
+            );
+            return [header, ...filtered];
+        });
+
+        // clear selection
+        if (selectionRef.current) selectionRef.current.selected = "";
+    };
+
     return (
         <>
             {/* Header */}
@@ -43,35 +81,43 @@ export function UploadPage() {
                     accept=".xlsx,.xls"
                     onChange={handleFileUpload}
                 >
-                    <Button design="Emphasized" icon={upload}> Browse </Button>
+                    <Button design="Emphasized" icon={upload}>
+                        Browse
+                    </Button>
                 </FileUploader>
             </Toolbar>
 
             {/* Table Content */}
-            <Table
-                features={<TableSelectionMulti />}
-                headerRow={
-                    tableData.length > 0 && (
-                        <TableHeaderRow sticky>
-                            {tableData[0].map((col, index) => (
-                                <TableHeaderCell key={index}>
-                                    <span>{col}</span>
-                                </TableHeaderCell>
-                            ))}
-                        </TableHeaderRow>
-                    )
-                }
-            >
-                {tableData.slice(1).map((row, rowIndex) => (
-                    <TableRow key={rowIndex}>
-                        {row.map((cell, cellIndex) => (
-                            <TableCell key={cellIndex}>
-                                <span>{cell}</span>
-                            </TableCell>
+            <ui5-table>
+                <ui5-table-selection-multi
+                    ref={selectionRef}
+                    slot="features"
+                    behavior="RowSelector"
+                    header-selector="SelectAll"
+                ></ui5-table-selection-multi>
+
+                {tableData.length > 0 && (
+                    <ui5-table-header-row slot="headerRow" sticky>
+                        {tableData[0].map((col, index) => (
+                            <ui5-table-header-cell key={index}>
+                                <span>{col}</span>
+                            </ui5-table-header-cell>
                         ))}
-                    </TableRow>
+                    </ui5-table-header-row>
+                )}
+
+                {tableData.slice(1).map((row, rowIndex) => (
+                    <ui5-table-row key={rowIndex} row-key={`Row${rowIndex + 1}`}>
+                        {row.map((cell, cellIndex) => (
+                            <ui5-table-cell key={cellIndex}>
+                                <span>{cell}</span>
+                            </ui5-table-cell>
+                        ))}
+                    </ui5-table-row>
                 ))}
-            </Table>
+            </ui5-table>
+
+
 
             {/* Footer */}
             <Bar
@@ -82,6 +128,9 @@ export function UploadPage() {
                 }}
                 endContent={
                     <>
+                        <Button design="Emphasized" onClick={handleDelete} style={{ marginTop: "0.75rem" }}>
+                            Delete Selected
+                        </Button>
                         <Button design="Emphasized" onClick={() => setOpen(true)}>
                             Enter Package
                         </Button>
