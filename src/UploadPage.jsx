@@ -1,21 +1,18 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import upload from "@ui5/webcomponents-icons/dist/upload.js";
 import * as XLSX from "xlsx";
 import {
     Toolbar, ToolbarSpacer, Button, Title, Bar, Table, Dialog, Input, Label,
-    TableRow, TableCell, TableHeaderRow, TableHeaderCell, TableSelectionMulti
+    TableRow, TableCell, TableHeaderRow, TableHeaderCell, TableSelectionMulti,
+    FileUploader
 } from '@ui5/webcomponents-react';
 
 export function UploadPage() {
-    const fileInputRef = useRef(null);
     const [tableData, setTableData] = useState([]);
     const [open, setOpen] = useState(false);
 
-    const handleBrowseClick = () => {
-        fileInputRef.current.click();
-    };
-    const handleFileChange = (event) => {
-        const file = event.target.files[0];
+    const handleFileUpload = async (event) => {
+        const file = event.detail.files[0]; // FileUploader gives files in event.detail
         if (file) {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -28,7 +25,6 @@ export function UploadPage() {
 
                 // Convert to JSON
                 const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-                // Remove header row for data table
                 setTableData(jsonData);
             };
             reader.readAsArrayBuffer(file);
@@ -41,14 +37,14 @@ export function UploadPage() {
             <Toolbar>
                 <Title level="H1">PIPO To CPI Migration</Title>
                 <ToolbarSpacer />
-                <Button design="Emphasized" icon={upload} onClick={handleBrowseClick}>Browse</Button>
-                <input
-                    type="file"
+                <FileUploader
+                    hideInput
+                    placeholder="Choose Excel File"
                     accept=".xlsx,.xls"
-                    style={{ display: "none" }}
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                />
+                    onChange={handleFileUpload}
+                >
+                    <Button design="Emphasized" icon={upload}> Browse </Button>
+                </FileUploader>
             </Toolbar>
 
             {/* Table Content */}
@@ -86,7 +82,9 @@ export function UploadPage() {
                 }}
                 endContent={
                     <>
-                        <Button design="Emphasized" onClick={() => setOpen(true)}>Enter Package</Button>
+                        <Button design="Emphasized" onClick={() => setOpen(true)}>
+                            Enter Package
+                        </Button>
                         <Button design="Emphasized">Submit</Button>
                     </>
                 }
@@ -97,18 +95,41 @@ export function UploadPage() {
                 open={open}
                 headerText="Enter Package Details"
                 footer={
-                    <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem", width: "100%" }}>
-                        <Button design="Emphasized" onClick={() => setOpen(false)}>OK</Button>
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "flex-end",
+                            gap: "0.5rem",
+                            width: "100%",
+                        }}
+                    >
+                        <Button design="Emphasized" onClick={() => setOpen(false)}>
+                            OK
+                        </Button>
                         <Button onClick={() => setOpen(false)}>Close</Button>
                     </div>
                 }
             >
-                <div style={{ padding: "1rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+                <div
+                    style={{
+                        padding: "1rem",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "1rem",
+                    }}
+                >
                     {[
                         { label: "Package Name", placeholder: "Enter package name" },
                         { label: "Description", placeholder: "Enter description" },
                     ].map((field, idx) => (
-                        <div key={idx} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        <div
+                            key={idx}
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "0.5rem",
+                            }}
+                        >
                             <Label required style={{ minWidth: "140px" }}>
                                 {field.label}:
                             </Label>
@@ -118,5 +139,5 @@ export function UploadPage() {
                 </div>
             </Dialog>
         </>
-    )
+    );
 }
